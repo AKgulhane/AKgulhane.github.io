@@ -12,7 +12,7 @@
     <header class="top">
       <div>
         <h1>Support Executive Management Dashboard</h1>
-        <p class="subtitle">Customer support briefing for bank customers — lending, SBA, operations</p>
+        <p class="subtitle">Customer support briefing — lending, SBA, operations · contact regions APAC / EMEA / AMER</p>
       </div>
       <div class="period">
         <strong id="periodLabel"></strong>
@@ -25,23 +25,23 @@
     <section class="grid-2">
       <article class="panel">
         <h2>SLA attainment</h2>
-        <p class="lead">Share of cases inside first-response and resolution targets.</p>
         <div id="slaRows"></div>
         <p class="lead" style="margin:16px 0 8px">MTTR by priority (hours)</p>
         <div id="mttrRows"></div>
       </article>
       <article class="panel">
         <h2>Cases handled</h2>
-        <p class="lead">Volume this period, plus live backlog.</p>
         <div class="stat-split" id="caseSplit"></div>
         <div id="caseTypes"></div>
+        <p class="lead" style="margin:16px 0 8px">By customer contact region</p>
+        <div id="caseRegions"></div>
       </article>
     </section>
     <section class="grid-2">
       <article class="panel">
         <h2>Escalations</h2>
         <table>
-          <thead><tr><th>Case</th><th>Customer</th><th>Sev</th><th>Path</th><th>Owner</th><th>Age</th></tr></thead>
+          <thead><tr><th>Case</th><th>Customer</th><th>Region</th><th>Sev</th><th>Path</th><th>Owner</th><th>Age</th></tr></thead>
           <tbody id="escalations"></tbody>
         </table>
       </article>
@@ -56,18 +56,17 @@
   <script src="assets/insights.js"></script>
   <script>
     const D = SUPPORT.metrics;
-    const tone = (value, target, invert) => invert ? (value <= target ? "on" : value <= target * 1.15 ? "watch" : "off") : (value >= target ? "on" : value >= target - 2 ? "watch" : "off");
     const pill = (kind, text) => `<span class="status-pill ${kind}">${text}</span>`;
     document.getElementById("periodLabel").textContent = SUPPORT.period;
     document.getElementById("asOf").textContent = SUPPORT.asOf;
     document.getElementById("kpis").innerHTML = `
-      <article class="kpi"><div class="label">SLA</div><div class="value">${D.sla.attainment}%</div><div class="meta">${pill("on", "On target")} · ${D.sla.delta}</div></article>
+      <article class="kpi"><div class="label">SLA</div><div class="value">${D.sla.attainment}%</div><div class="meta">${pill("on", "On target")}</div></article>
       <article class="kpi"><div class="label">CSAT</div><div class="value">${D.csat.pct}%</div><div class="meta">${pill("on", "n=" + D.csat.n)}</div></article>
       <article class="kpi"><div class="label">First response</div><div class="value">${D.frt.hours}h</div><div class="meta">${pill("on", "Median")}</div></article>
-      <article class="kpi"><div class="label">MTTR</div><div class="value">${D.mttr.hours}h</div><div class="meta">${pill("on", "Target < " + D.mttr.targetHours + "h")}</div></article>
+      <article class="kpi"><div class="label">MTTR</div><div class="value">${D.mttr.hours}h</div><div class="meta">${pill("on", "Target < 6h")}</div></article>
       <article class="kpi"><div class="label">Cases handled</div><div class="value">${D.cases.handled}</div><div class="meta">${D.cases.delta}</div></article>
-      <article class="kpi"><div class="label">Ticket deflection</div><div class="value">${D.deflection.pct}%</div><div class="meta">${pill("watch", "Target " + D.deflection.target + "%")}</div></article>
-      <article class="kpi"><div class="label">Escalations</div><div class="value">${D.escalations.open}</div><div class="meta">${pill("watch", "Open")} · ${D.escalations.month} this month</div></article>
+      <article class="kpi"><div class="label">Ticket deflection</div><div class="value">${D.deflection.pct}%</div><div class="meta">${pill("watch", "Target 35%")}</div></article>
+      <article class="kpi"><div class="label">Escalations</div><div class="value">${D.escalations.open}</div><div class="meta">${pill("watch", "Open")}</div></article>
       <article class="kpi"><div class="label">Next maintenance</div><div class="value" style="font-size:1.1rem;line-height:1.25;margin-top:10px">${D.maintenance.next}</div><div class="meta">Comms due 48h prior</div></article>`;
     document.getElementById("slaRows").innerHTML = D.sla.byPriority.map((row) => `<div class="row"><div>${row.name}</div><div class="bar"><span style="width:${Math.min(row.value,100)}%"></span></div><div>${row.value}%</div></div>`).join("");
     const maxMttr = Math.max(...D.mttr.byPriority.map((x) => x.hours), D.mttr.targetHours);
@@ -75,7 +74,9 @@
     document.getElementById("caseSplit").innerHTML = `<div class="stat"><b>${D.cases.open}</b><span>Open</span></div><div class="stat"><b>${D.cases.inProgress}</b><span>In progress</span></div><div class="stat"><b>${D.cases.resolved}</b><span>Resolved</span></div>`;
     const maxType = Math.max(...D.cases.byType.map((x) => x.value));
     document.getElementById("caseTypes").innerHTML = D.cases.byType.map((row) => `<div class="row"><div>${row.name}</div><div class="bar"><span style="width:${(row.value/maxType)*100}%"></span></div><div>${row.value}</div></div>`).join("");
-    document.getElementById("escalations").innerHTML = D.escalations.items.map((item) => `<tr><td>${item.id}</td><td>${item.customer}</td><td>${pill(item.severity === "P1" ? "off" : "watch", item.severity)}</td><td>${item.path}</td><td>${item.owner}</td><td>${item.age}</td></tr>`).join("");
+    const maxReg = Math.max(...D.cases.byRegion.map((x) => x.value));
+    document.getElementById("caseRegions").innerHTML = D.cases.byRegion.map((row) => `<div class="row"><div>${row.name}</div><div class="bar"><span class="${row.sla < 95 ? "warn" : ""}" style="width:${(row.value/maxReg)*100}%"></span></div><div>${row.value}</div></div>`).join("");
+    document.getElementById("escalations").innerHTML = D.escalations.items.map((item) => `<tr><td>${item.id}</td><td>${item.customer}</td><td>${item.region}</td><td>${pill(item.severity === "P1" ? "off" : "watch", item.severity)}</td><td>${item.path}</td><td>${item.owner}</td><td>${item.age}</td></tr>`).join("");
     document.getElementById("windows").innerHTML = D.maintenance.windows.map((w) => `<div class="mw"><div class="when"><b>${w.date}</b>${w.time}</div><div><strong>${w.title}</strong><br /><span style="color:var(--muted)">${w.impact}</span></div><div>${pill(w.status === "Completed" ? "on" : "watch", w.status)}</div></div>`).join("");
   </script>
 </body>
