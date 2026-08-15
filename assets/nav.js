@@ -2,6 +2,7 @@
   const here = (location.pathname.split("/").pop() || "index.html");
   const links = [
     ["index.html", "Dashboard"],
+    ["insights.html", "AI insights"],
     ["team.html", "Team"],
     ["slas.html", "SLAs & metrics"],
     ["escalations.html", "Escalations"],
