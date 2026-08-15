@@ -1,5 +1,5 @@
-# Customer Success Executive Dashboard
+# Customer Support function
 
-Live site (no install): **https://akgulhane.github.io/**
+**Live dashboard:** https://akgulhane.github.io/
 
-Anyone with the link can open the dashboard in a browser. Source project: [cs-executive-dashboard](https://github.com/AKgulhane/cs-executive-dashboard).
+No install. Source and documents: https://github.com/AKgulhane/cs-executive-dashboard
